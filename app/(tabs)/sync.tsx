@@ -1,13 +1,16 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
-
 import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
-export default function sync() {
-  const [permission, requestPermission] = useCameraPermissions();
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { useSessionStore } from "@/store/session";
+import { useRouter } from "expo-router";
 
+export default function sync() {
+  const router = useRouter();
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
   const [qrValue, setQRValue] = useState<string | null>(null);
+  const { setSession } = useSessionStore();
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -17,8 +20,22 @@ export default function sync() {
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     setScanning(false);
+
+    const url = data.split("?")[0];
+    const token = data.split("?")[1].split("=")[1];
+
+    if (!url || !token) {
+      Alert.alert("Invalid QR Code");
+    }
+
     setQRValue(data);
-    Alert.alert("QR Code Scanned", `Scanned Value: ${data}`);
+
+    setSession({
+      url,
+      token,
+    });
+
+    router.replace("/");
   };
 
   return (
