@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  TextInput,
+} from "react-native";
 
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSessionStore } from "@/store/session";
 import { useRouter } from "expo-router";
 
 export default function sync() {
+  const [formData, setFormData] = useState({
+    url: "",
+    token: "",
+  });
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
@@ -33,6 +44,21 @@ export default function sync() {
     setSession({
       url,
       token,
+    });
+
+    router.replace("/");
+  };
+
+  const handleSubmit = () => {
+    if (!formData.url || !formData.token) {
+      Alert.alert("Please enter a URL and token");
+      return;
+    }
+    setQRValue(`${formData.url}?token=${formData.token}`);
+
+    setSession({
+      url: formData.url,
+      token: formData.token,
     });
 
     router.replace("/");
@@ -66,6 +92,30 @@ export default function sync() {
 
       {qrValue && (
         <Text style={styles.resultText}>Scanned QR Value: {qrValue}</Text>
+      )}
+
+      {/* TODO: add a form that allows the user to enter a URL and a token in inputs */}
+      {scanning == false && (
+        <View style={styles.form}>
+          <Text>Enter URL</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="URL"
+            value={formData.url}
+            onChangeText={(text) => setFormData({ ...formData, url: text })}
+          />
+          <Text>Enter Token</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Token"
+            value={formData.token}
+            onChangeText={(text) => setFormData({ ...formData, token: text })}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -113,5 +163,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#333",
+  },
+
+  // Form block
+  form: {
+    display: "flex",
+    width: "80%",
+    marginTop: 25,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+  },
+  input: {
+    width: "100%",
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });

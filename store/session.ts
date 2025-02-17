@@ -7,7 +7,7 @@ export type setSession = {
 
 export type Session = {
   id: string;
-  name: string;
+  url: string;
   token: string;
 };
 
@@ -27,7 +27,7 @@ export const useSessionStore = create<SessionStore & SessionActions>((set) => ({
       ...prev,
       session: {
         id,
-        name: newSession.url,
+        url: newSession.url,
         token: newSession.token,
       },
     }));
